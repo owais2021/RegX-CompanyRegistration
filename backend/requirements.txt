@@ -1,0 +1,8 @@
+##### Define here dependencies #####
+Flask>=2.1.0
+Werkzeug>=2.0.0
+Flask-SQLAlchemy==3.0.2
+psycopg2-binary==2.9.3
+requests==2.28.1
+beautifulsoup4==4.11.1
+python-dotenv==1.0.0 
