@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from dotenv import load_dotenv
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-54f=8b#pebtem%i4jjjvwlid0ffg2lli=ul-5uqla5k2m1_n6c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', ' 0.0.0.0']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -81,10 +82,23 @@ WSGI_APPLICATION = 'regx_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+env_path = Path('../../') / '.env'
+
+load_dotenv(dotenv_path=env_path)
+
+print("DATABASE_USER:", os.getenv('DATABASE_USER'))
+print("DATABASE_PASSWORD:", os.getenv('DATABASE_PASSWORD'))
+print("DATABASE_HOST:", os.getenv('DATABASE_HOST'))
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DATABASE_NAME', default='publicaidatabase'),
+        'USER': os.getenv('DATABASE_USER', default='root'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', default='admin_password'),
+        'HOST': os.getenv('DATABASE_HOST', default='postgres'),
+        'PORT': os.getenv('DATABASE_PORT', default='5432'),
     }
 }
 
