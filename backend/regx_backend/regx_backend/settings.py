@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-54f=8b#pebtem%i4jjjvwlid0ffg2lli=ul-5uqla5k2m1_n6c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', ' 0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '0.0.0.0']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentification',
+    'company_data',
 ]
 
 MIDDLEWARE = [
@@ -85,11 +86,6 @@ WSGI_APPLICATION = 'regx_backend.wsgi.application'
 env_path = Path('../../') / '.env'
 
 load_dotenv(dotenv_path=env_path)
-
-print("DATABASE_USER:", os.getenv('DATABASE_USER'))
-print("DATABASE_PASSWORD:", os.getenv('DATABASE_PASSWORD'))
-print("DATABASE_HOST:", os.getenv('DATABASE_HOST'))
-
 
 DATABASES = {
     'default': {
