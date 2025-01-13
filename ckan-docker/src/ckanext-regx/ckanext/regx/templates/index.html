@@ -1,0 +1,32 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regx Extension</title>
+    <link rel="stylesheet" href="public/css/regx.css">
+</head>
+
+<body>
+    <div class=".sherry">
+        <h1>Welcome to Regx!</h1>
+        <p>This is the Regx extension page.</p>
+    </div>
+</body>
+
+</html> -->
+
+{% extends "page.html" %}
+
+{% block content %}
+{% import "macros/flash_messages.html" as messages %}
+<div class="regx-container">
+    {% include "side_nav.html" %}
+    <div class="main-content">
+        {{ messages.flash_messages() }}
+        <h1>Welcome to the Regx Extension</h1>
+        <p>This is the default page for your Regx extension.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+<link rel="stylesheet" href="{{ h.url_for_static('css/styles.css') }}">
+<div class="side-nav">
+    <ul>
+        <li><a href="{{ h.url_for('regx.index') }}">🏠 Home</a></li>
+        {% if c.user and not c.userobj.sysadmin %}
+        <li><a href="{{ h.url_for('regx.company_form') }}">📋 Company Profile</a></li>
+        <li><a href="#">📂 Edit Profile</a></li>
+        <li><a href="{{ h.url_for('regx.claim_profile') }}">📋 Claim Profile</a></li>
+        {% endif %}
+        {% if c.user and c.userobj.sysadmin %}
+        <li><a href="{{ h.url_for('regx.admin_all_user_profiles') }}">⚙️ All Users</a></li>
+        <li><a href="{{ h.url_for('regx.admin_all_profiles') }}">📋 Company Profiles</a></li>
+        <li><a href="#">⚙️ Web Scrapping</a></li>
+        {% endif %}
+
+    </ul>
+</div>

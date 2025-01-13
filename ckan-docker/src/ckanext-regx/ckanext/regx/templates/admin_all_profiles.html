@@ -1,0 +1,148 @@
+{% extends "page.html" %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<style>
+    .dataTable {
+        width: 100%;
+        margin: 20px 0;
+        border-collapse: collapse;
+    }
+
+    .dataTable th {
+        background-color: #0b7a8b;
+        color: white;
+        font-weight: bold;
+    }
+
+    .btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-sm {
+        font-size: 12px;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    jQuery.noConflict();
+    jQuery(document).ready(function ($) {
+        const csrfToken = $('input[name="_csrf_token"]').val();
+
+        $('#profilesTable').DataTable({
+            ajax: {
+                url: '/regx/admin_all_profiles',
+                type: 'GET',
+                dataSrc: 'data'
+            },
+            columns: [
+                { data: 'id', render: (data, type, row, meta) => meta.row + 1 }, // SR No
+                { data: 'company_name' },
+                { data: 'address' },
+                { data: 'website' },
+                {
+                    data: 'status',
+                    render: function (data) {
+                        return data ? 'Active' : 'Inactive';
+                    }
+                },
+                { data: 'created' }, // Created Date
+                {
+                    data: null,
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-status ${row.status ? 'btn-danger' : 'btn-success'}"
+                                    data-id="${row.id}" 
+                                    data-status="${!row.status}">
+                                ${row.status ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="downloadDataset(${row.id})">
+                                Download JSON
+                            </button>
+                        `;
+                    }
+                }
+            ]
+        });
+
+        // Toggle Status Button
+        $('#profilesTable').on('click', '.btn-status', function () {
+            const button = $(this);
+            const companyId = button.data('id');
+            const newStatus = button.data('status');
+
+            $.ajax({
+                url: '/regx/toggle_status',
+                type: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                },
+                data: {
+                    company_id: companyId,
+                    new_status: newStatus
+                },
+                success: function (response) {
+                    alert(response.message);
+                    $('#profilesTable').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    alert('Error: ' + xhr.responseJSON.error);
+                }
+            });
+        });
+    });
+
+    function downloadDataset(companyId) {
+        window.location.href = `/regx/download_dataset/${companyId}`;
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="regx-container">
+    {% include "side_nav.html" %}
+    <div class="main-content">
+        <h1>Company Datasets</h1>
+        <p>Manage all company profiles below.</p>
+        {{ h.csrf_input() }}
+        <table id="profilesTable" class="dataTable display">
+            <thead>
+                <tr>
+                    <th>SR No</th>
+                    <th>Company Name</th>
+                    <th>Address</th>
+                    <th>Website</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
