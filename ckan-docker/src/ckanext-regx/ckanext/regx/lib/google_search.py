@@ -141,11 +141,16 @@ def scrape_pages(links, visited_urls, progress=None):
 def process_companies(parsed_data_file, output_dir, api_key):
     """Process each company, find its official URL, and scrape the website."""
     try:
+        log.debug(f"SERPAPI_API_KEY: {os.getenv('SERPAPI_API_KEY')}")
+        
         with open(parsed_data_file, "r", encoding="utf-8") as file:
             parsed_data = json.load(file)
 
+        
         os.makedirs(output_dir, exist_ok=True)
 
+        
+        log.debug(f"########################### Current user: {os.geteuid()}")
         for company in parsed_data:
             company_name = company.get("legalName")
             if not company_name:
@@ -153,9 +158,10 @@ def process_companies(parsed_data_file, output_dir, api_key):
                 continue
 
             log.info(f"Processing company: {company_name}")
-
+            
             ####### Find the website URL using SerpAPI ######
             website_url = find_company_website_with_serpapi(company_name, api_key)
+            
             if not website_url:
                 log.warning(f"No website URL found for {company_name}. Skipping.")
                 continue
@@ -164,6 +170,8 @@ def process_companies(parsed_data_file, output_dir, api_key):
 
             ####### Get internal links ######
             links = get_all_internal_links(website_url)
+            log.debug("Run googgleee sd   dsdabjifabjifabjkfbjkbjkas")
+
             if not links:
                 log.warning(f"No internal links found for {company_name}. Skipping.")
                 continue
@@ -201,16 +209,15 @@ def process_companies(parsed_data_file, output_dir, api_key):
                 json.dump(meta_info, meta_file, indent=4, ensure_ascii=False)
 
             log.info(f"Meta data for '{company_name}' saved to '{meta_file_path}'")
-
+    
     except Exception as e:
         log.error(f"An error occurred: {e}")
+        
 
 
 ###### Main function ######
 def main():
     """Main function to call the process_companies method."""
+    log.debug("Run googgleee sd   dsdabjifabjifabjkfbjkbjkas")
     process_companies(PARSED_CKAN_DATA_FILE, output_dir, SERPAPI_API_KEY)
 
-
-if __name__ == "__main__":
-    main()

@@ -179,6 +179,7 @@ def insert_tender_data(tender_id, company_name, connection):
             insert_tender_query = """
             INSERT INTO regx_tender (tender_id, company_name, company_id)
             VALUES (%s, %s, %s)
+            ON CONFLICT (tender_id, company_name) DO NOTHING
             """
             cursor.execute(insert_tender_query, (tender_id, company_name, company_id))
             connection.commit()

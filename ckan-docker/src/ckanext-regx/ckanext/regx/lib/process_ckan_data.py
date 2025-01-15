@@ -168,5 +168,4 @@ def main():
 
     close_db_connection(connection)
 
-if __name__ == "__main__":
-    main()
+

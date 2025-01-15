@@ -110,6 +110,8 @@ def main():
 
     ############ Retrieve company names from the database ###########
     company_names = get_package_names_from_db(connection)
+    log.warning("Company Names :::::::::::::::::")
+    log.warning(company_names)
     if not company_names:
         log.warning("No company names found in the database. Exiting...")
         return
@@ -121,6 +123,9 @@ def main():
         ############ Assuming the meta.json file is named after the company and located in the respective folder ###########
         folder_path = os.path.join(LOCAL_JSON_FOLDER, LOCAL_JSON_FILE)
         meta_json_path = os.path.join(folder_path, company_name, 'meta.json')
+
+        log.info("Meta Json PATH::::::::::: %s", meta_json_path)
+
 
         if os.path.exists(meta_json_path):
             log.info(f"Found meta.json for {company_name}.")
@@ -148,5 +153,3 @@ def main():
 
     close_db_connection(connection)
 
-if __name__ == "__main__":
-    main()
