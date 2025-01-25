@@ -6,7 +6,7 @@ import re
 from urllib.parse import urljoin
 from dotenv import load_dotenv
 import logging
-
+import time
 ###### Load environment variables ######
 load_dotenv()
 
@@ -83,6 +83,7 @@ def get_all_internal_links(base_url):
     except requests.exceptions.RequestException as e:
         log.error(f"Error getting internal links from {base_url}: {e}")
         return []
+        
 
 
 def extract_emails(text):
@@ -97,6 +98,7 @@ def scrape_pages(links, visited_urls, progress=None):
     for link in links:
         if link in visited_urls:
             continue
+        time.sleep(5)
 
         visited_urls.add(link)
 

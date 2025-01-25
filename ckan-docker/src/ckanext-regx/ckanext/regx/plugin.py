@@ -1,21 +1,25 @@
 import os
 import subprocess
+import threading
 import logging
 from ckan.plugins import SingletonPlugin, implements
 from ckan.plugins import toolkit as tk
-from ckan.plugins.interfaces import IBlueprint, IConfigurer
+from ckan.plugins.interfaces import IBlueprint, IConfigurer, IPluginObserver, IActions
 from flask import Blueprint, render_template, abort, request
 from ckanext.regx.controllers.sherry_controller import SherryController
 from ckanext.regx.controllers.company_controller import CompanyController
 from ckanext.regx.controllers.admin_controller import AdminController
 from ckanext.regx.controllers.admin_user_controller import AdminUserController
 from ckanext.regx.controllers.claim_profile_controller import ClaimProfileController
+from ckanext.regx.controllers.fetch_company_controller import FetchCompanyController
 from ckanext.regx.lib.database import (
     connect_to_db,
     create_tables,
     close_db_connection
 )
 from ckanext.regx.main import run_fetching
+from flask import Flask
+from ckanext.regx.logic import action
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -25,6 +29,14 @@ log = logging.getLogger(__name__)
 class RegxPlugin(SingletonPlugin):
     implements(IBlueprint)
     implements(IConfigurer)
+ #   implements(IActions)
+    implements(IPluginObserver, inherit=True)
+
+
+    # IActions
+
+   # def get_actions(self):
+  #      return action.get_actions()
 
     def _check_access(self, admin_only=False):
         """
@@ -132,6 +144,13 @@ class RegxPlugin(SingletonPlugin):
             """
             self._check_access(admin_only=True)
             return AdminUserController.admin_all_user_profiles()
+        
+        @blueprint.route('/fetch_companies')
+        def fetch_companies():
+            """
+            Admin-only page to view all user profiles.
+            """
+            return FetchCompanyController.start_fetching()
 
         return blueprint
 
@@ -141,7 +160,7 @@ class RegxPlugin(SingletonPlugin):
         """
         tk.add_template_directory(config, 'templates')
         tk.add_public_directory(config, 'public')
-
+        
         config['ckan.auth.create_user_via_web'] = 'true'
         
         # Create tables during plugin initialization
@@ -156,16 +175,52 @@ class RegxPlugin(SingletonPlugin):
         else:
             log.error(
                 "Failed to connect to the database during plugin initialization.")
-        log.debug("Start main ###############")
+        
+
         
         # Command to run the script with sudo
         #command = ['python3', '/srv/app/src_extensions/ckanext-regx/ckanext/regx/main.py']
 
         # Run the command
         #subprocess.run(command)
+        
+        
+            
 
         # Create a thread and specify the target method and arguments
-       # my_thread = threading.Thread(target=run_fetching)
+       # my_thread = threading.Thread(target=FetchCompanyController.start_fetching())
+      #  my_thread.start()
+
+    def after_load(self, plugin):
+        log.debug("################## Start main ###############")
+        context = {}
+        data_dict = {
+            'param1': 'value1',
+            'param2': 42
+        }
+
+
+      #  my_thread = threading.Thread(target=run_fetching)
        # my_thread.start()
+        """
+        app = Flask(__name__)
+        app.register_blueprint(self.get_blueprint())  # Ensure the blueprint is registered
+
+        with app.test_client() as client:
+            response = client.get('/regx/fetch_companies')
+            print(response.data)
+"""
+        # Call the 'my_custom_action' you defined in the plugin
+       # result = tk.get_action('my_custom_action')(context, data_dict)
+     #   log.debug("#### Run my_custom_action")
+    #    log.debug(result)
+                
 
 
+    def _test(self):
+        app = Flask(__name__)
+        app.register_blueprint(self.get_blueprint())  # Ensure the blueprint is registered
+
+        with app.test_client() as client:
+            response = client.get('/regx/fetch_companies')
+            log.debug(response.data)
