@@ -134,6 +134,74 @@ def create_tables(connection):
     create_alternative_company_table(connection=connection)
     create_sherry_table(connection=connection)
 
+def insert_test(connection, name, address):
+    try:
+        with connection.cursor() as cursor:
+            # Create the table if it doesn't exist
+
+            insert_entry_query = """
+            INSERT INTO sherry (name, address)
+            VALUES (%s, %s);
+            """
+            
+            # Insert the new entry
+            cursor.execute(insert_entry_query, (name, address))
+            connection.commit()
+            
+            log.info("Table 'sherry' created (if not existed) and new entry added successfully!")
+    except Exception as e:
+        connection.rollback()
+        log.error(f"Error creating table 'sherry' or inserting entry: {e}")
+
+
+import re
+
+def update_sherry_address(connection, sherry_id):
+    """
+    Update the address of the entry in the 'sherry' table by incrementing
+    the number in the address by 1.
+    """
+    # Regular expression to find the last number in the address
+    address_pattern = r'(\d+)$'
+
+    # Query to get the current address for a given sherry_id
+    select_address_query = "SELECT address FROM sherry WHERE id = %s;"
+
+    # Query to update the address with the incremented value
+    update_address_query = "UPDATE sherry SET address = %s WHERE id = %s;"
+
+    try:
+        with connection.cursor() as cursor:
+            # Fetch the current address from the database
+            cursor.execute(select_address_query, (sherry_id,))
+            result = cursor.fetchone()
+
+            if result:
+                current_address = result[0]
+                # Find the last number in the address
+                match = re.search(address_pattern, current_address)
+                
+                if match:
+                    # Extract the number and increment it
+                    current_number = int(match.group(1))
+                    new_number = current_number + 1
+                    # Replace the old number with the new incremented number
+                    new_address = re.sub(address_pattern, str(new_number), current_address)
+                    
+                    # Update the address in the database
+                    cursor.execute(update_address_query, (new_address, sherry_id))
+                    connection.commit()
+                    
+                    log.info(f"Address updated successfully for sherry ID {sherry_id}: {new_address}")
+                else:
+                    log.warning(f"No number found in address for sherry ID {sherry_id}. No update made.")
+            else:
+                log.warning(f"No entry found for sherry ID {sherry_id}.")
+    except Exception as e:
+        connection.rollback()
+        log.error(f"Error updating address for sherry ID {sherry_id}: {e}")
+
+
     
 def insert_company_data(company_name, connection):
     """

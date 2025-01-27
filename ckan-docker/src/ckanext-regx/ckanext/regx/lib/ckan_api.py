@@ -6,6 +6,7 @@ import json  # To parse the JSON file
 from dotenv import load_dotenv
 from ckanext.regx.lib.database import connect_to_db, close_db_connection, save_website_and_email, get_package_names_from_db
 import logging
+#from ckanext.regx.lib.test import test
 
 ###### Load environment variables ######
 load_dotenv()
@@ -30,13 +31,50 @@ ckan = ckanapi.RemoteCKAN(CKAN_URL, apikey=API_KEY, session=session)
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
+def test():
+       # APIKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJzSDl4NDA3T0dDckdrRTRnRnEtLUdKLS0zNFhZczI2dGh4ZXFlR0lRbmhnIiwiaWF0IjoxNzM0NTM0NTgxfQ.fCiRFjm-OPaSdI7C-RJvXmCSgE-fhFoMhU_IXKLjz9I"
+        r = requests.get(
+            'http://127.0.0.1:5000/api/action/package_list',
+            headers={'Authorization': API_KEY},
+            verify=False  # Disable SSL verification for this request
+        )
+        log.debug("Returururuurur    : ")
+        log.debug(r.content)
+
+def test2():
+    response = requests.post(
+            f"{CKAN_URL}/api/action/package_show",
+            json={"id": "1"},
+            headers={"Authorization": API_KEY, "Content-Type": "application/x-www-form-urlencoded"},
+            verify=False  # Disable SSL verification (not recommended for production)
+        )
+    log.debug("Returururuurur    : ")
+    log.debug(response.content)
+
+
+def test3():
+    dataset_name="testdata"
+    company_name="exampleeompany"
+    response = requests.post(
+                f"{CKAN_URL}/api/action/package_create",
+                json={
+                    "name": dataset_name,
+                    "title": company_name[:100],  ########### Truncate title if needed ###########
+                    "owner_org": CKAN_ORGANIZATION_ID,
+                },
+                headers={"Authorization": API_KEY},
+                verify=False  # Disable SSL verification (not recommended for production)
+            )
+    log.debug("Returururuurur    : ")
+    log.debug(response.content)
+
 def create_or_update_dataset(company_name):
     """
     Create or update the dataset in CKAN under the specified organization.
     """
     ########### Sanitize the dataset name to meet CKAN naming rules ###########
     dataset_name = company_name.lower()
-    dataset_name = re.sub(r'[^a-z0-9-_]', '-', dataset_name) ########### Replace invalid characters with '-' ###########
+    dataset_name = re.sub(r'[^a-z0-9-_]', '-', dataset_name)  ########### Replace invalid characters with '-' ###########
 
     # Ensure the dataset name does not exceed 100 characters
     if len(dataset_name) > 100:
@@ -44,16 +82,46 @@ def create_or_update_dataset(company_name):
 
     try:
         log.info(f"Checking if dataset '{dataset_name}' exists.")
+        
         ########### Check if the package exists ###########
-        package = ckan.action.package_show(id=dataset_name)
-        log.info(f"Dataset '{dataset_name}' exists.")
-    except ckanapi.NotFound:
-        log.warning(f"Dataset '{dataset_name}' does not exist. Creating a new one.")
-        package = ckan.action.package_create(
-            name=dataset_name,
-            title=company_name[:100],  ########### Truncate title if needed ###########
-            owner_org=CKAN_ORGANIZATION_ID,
+        response = requests.post(
+            f"{CKAN_URL}/api/action/package_show",
+            json={"id": dataset_name},
+            headers={"Authorization": API_KEY},
+            verify=False  # Disable SSL verification (not recommended for production)
         )
+        
+        if response.status_code == 200:
+            package = response.json()["result"]
+            log.info(f"Dataset '{dataset_name}' exists.")
+        else:
+            log.warning(f"Dataset '{dataset_name}' does not exist or an error occurred. Creating a new one.")
+            raise requests.exceptions.RequestException(f"Status code: {response.status_code}")
+
+    except requests.exceptions.RequestException:
+        try:
+            ########### Create a new dataset ###########
+            response = requests.post(
+                f"{CKAN_URL}/api/action/package_create",
+                json={
+                    "name": dataset_name,
+                    "title": company_name[:100],  ########### Truncate title if needed ###########
+                    "owner_org": CKAN_ORGANIZATION_ID,
+                },
+                headers={"Authorization": API_KEY},
+                verify=False  # Disable SSL verification (not recommended for production)
+            )
+            
+            if response.status_code == 200:
+                package = response.json()["result"]
+                log.info(f"Dataset '{dataset_name}' created successfully.")
+            else:
+                raise requests.exceptions.RequestException(f"Failed to create dataset. Status code: {response.status_code}")
+        
+        except Exception as e:
+            log.error(f"OOOOOOOOOOOOO   Failed Action: {e}")
+            return None
+
     return package
 
 def upload_or_update_resource(company_name, package_id, json_file_path):
@@ -63,11 +131,32 @@ def upload_or_update_resource(company_name, package_id, json_file_path):
     ########### Check if the resource already exists ###########
     existing_resource = None
     try:
-        package = ckan.action.package_show(id=package_id)
-        for resource in package.get("resources", []):
-            if resource.get("name") == company_name:
-                existing_resource = resource
-                break
+        action = 'package_show'
+        url = f"{CKAN_URL}/api/action/{action}"
+        data = {'id': package_id}
+        headers = {
+            "Authorization": API_KEY
+        }
+
+        response = requests.post(
+            url,
+            json=data,  # Use `json` to automatically encode the data to JSON format
+            headers=headers,
+            verify=False 
+             # Disable SSL verification (not recommended for production)
+        )
+
+        log.debug(response.json)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+           # package = ckan.action.package_show(id=package_id)
+            for resource in response.json().get("resources", []): 
+                if resource.get("name") == company_name:
+                    existing_resource = resource
+                    break
     except Exception as e:
         log.error(f"Error checking resources: {e}")
 
@@ -140,6 +229,8 @@ def main():
 
                     ############ Save the website and email data to the database ###########
                     save_website_and_email(company_name_from_json, website_url, emails, connection)
+
+                    test3()
 
                 ############ Create or update the dataset (package) for this company ###########
                 package = create_or_update_dataset(company_name)

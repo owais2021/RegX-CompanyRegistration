@@ -2,6 +2,7 @@
 requests
 psycopg2-binary
 ckanapi
+schedule
 
 ##### Crawler Dependencies #####
 requests
