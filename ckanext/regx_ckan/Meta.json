@@ -1,0 +1,90 @@
+{
+    "_id": "66b41bc7d6504b898948cf7c",
+    "ocid": "ocds-mnwr74-22518250",
+    "__v": 0,
+    "extensions": [
+        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_lots_extension/bd6a5a0617abcdcf9da19db0e70a899e6b10c91c/extension.json",
+        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_location_extension/v1.1.5/extension.json",
+        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_enquiry_extension/v1.1.5/extension.json",
+        "https://raw.githubusercontent.com/open-contracting-extensions/ocds_coveredBy_extension/9b617f9c3a84f8eb727f273e1bb55a1c5bc7a925/extension.json"
+    ],
+    "license": "https://opendefinition.org/licenses/cc-zero/",
+    "publicationPolicy": "http://bkmk/ui/de/publicationPolicy",
+    "publishedDate": "2024-08-05T22:00:00.000Z",
+    "publisher": {
+        "name": "Bekanntmachungsservice"
+    },
+    "releases": [
+        {
+            "ocid": "ocds-mnwr74-22518250",
+            "id": "22518250",
+            "date": "2024-08-05T22:00:00Z",
+            "tag": [
+                "tender"
+            ],
+            "initiationType": "tender",
+            "numberOfTenderers": 1,
+            "parties": [
+                {
+                    "name": "Test Tender by Owais Khan",
+                    "id": "ORG-0001",
+                    "identifier": {
+                        "legalName": "Test Tender by Owais Khan"
+                    },
+                    "roles": [
+                        "supplier"
+                    ]
+                }
+            ],
+            "buyer": {
+                "name": "Die Autobahn GmbH des Bundes - NL Westfalen",
+                "identifier": {
+                    "id": "ORG-0001",
+                    "legalName": "Die Autobahn GmbH des Bundes - NL Westfalen"
+                }
+            },
+            "tender": {
+                "title": "Holzfassadenarbeiten Neubau Sozialgebäude AM Osnabrück",
+                "description": "Ca. 360,000 m² vorgefertigtes Fassadenelement aus Holzrahmenbau, einschließlich Fassade nach ausgewiesenen Vorgaben des Schall- u. Wärmeschutz herstellen, liefern u. vor tragender Wand aus Mauerwerk montieren, inkl. Fensteröffnungen\n\nHolzfassadenarbeiten Neubau Sozialgebäude AM Osnabrück",
+                "procuringEntity": {
+                    "name": "Die Autobahn GmbH des Bundes - NL Westfalen"
+                },
+                "items": [
+                    {
+                        "id": "LOT-0000",
+                        "classification": {
+                            "scheme": "CPV",
+                            "id": "45000000",
+                            "description": "Construction work"
+                        },
+                        "relatedLot": "LOT-0000",
+                        "deliveryAddress": {
+                            "locality": "Autobahnmeisterei Osnabrück\nLüstriger Straße 39\n49139 Bissendorf",
+                            "countryName": "DEU"
+                        }
+                    }
+                ],
+                "procurementMethodDetails": "Public announcement",
+                "numberOfTenderers": 0,
+                "documents": [
+                    {
+                        "id": "DOC-0001",
+                        "url": "https://vergabe.autobahn.de/NetServer/PublicationControllerServlet?function=Detail&TWOID=54321-Tender-19126d17f93-7942381d6ef7c2fe&PublicationType=0",
+                        "relatedLots": [
+                            "LOT-0000"
+                        ]
+                    }
+                ],
+                "lots": [
+                    {
+                        "id": "LOT-0000",
+                        "title": "Holzfassadenarbeiten Neubau Sozialgebäude AM Osnabrück",
+                        "description": "Ca. 360,000 m² vorgefertigtes Fassadenelement aus Holzrahmenbau, einschließlich Fassade nach ausgewiesenen Vorgaben des Schall- u. Wärmeschutz herstellen, liefern u. vor tragender Wand aus Mauerwerk montieren, inkl. Fensteröffnungen\n\nHolzfassadenarbeiten Neubau Sozialgebäude AM Osnabrück"
+                    }
+                ]
+            }
+        }
+    ],
+    "uri": "http://bkmk/api/notices/22518250?format=ocds&noticeVersion=1",
+    "version": "1.1"
+}
