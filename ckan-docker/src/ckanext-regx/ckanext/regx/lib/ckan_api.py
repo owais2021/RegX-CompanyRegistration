@@ -31,43 +31,6 @@ ckan = ckanapi.RemoteCKAN(CKAN_URL, apikey=API_KEY, session=session)
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
-def test():
-       # APIKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJzSDl4NDA3T0dDckdrRTRnRnEtLUdKLS0zNFhZczI2dGh4ZXFlR0lRbmhnIiwiaWF0IjoxNzM0NTM0NTgxfQ.fCiRFjm-OPaSdI7C-RJvXmCSgE-fhFoMhU_IXKLjz9I"
-        r = requests.get(
-            'http://127.0.0.1:5000/api/action/package_list',
-            headers={'Authorization': API_KEY},
-            verify=False  # Disable SSL verification for this request
-        )
-        log.debug("Returururuurur    : ")
-        log.debug(r.content)
-
-def test2():
-    response = requests.post(
-            f"{CKAN_URL}/api/action/package_show",
-            json={"id": "1"},
-            headers={"Authorization": API_KEY, "Content-Type": "application/x-www-form-urlencoded"},
-            verify=False  # Disable SSL verification (not recommended for production)
-        )
-    log.debug("Returururuurur    : ")
-    log.debug(response.content)
-
-
-def test3():
-    dataset_name="testdata"
-    company_name="exampleeompany"
-    response = requests.post(
-                f"{CKAN_URL}/api/action/package_create",
-                json={
-                    "name": dataset_name,
-                    "title": company_name[:100],  ########### Truncate title if needed ###########
-                    "owner_org": CKAN_ORGANIZATION_ID,
-                },
-                headers={"Authorization": API_KEY},
-                verify=False  # Disable SSL verification (not recommended for production)
-            )
-    log.debug("Returururuurur    : ")
-    log.debug(response.content)
-
 def create_or_update_dataset(company_name):
     """
     Create or update the dataset in CKAN under the specified organization.
@@ -119,12 +82,17 @@ def create_or_update_dataset(company_name):
                 raise requests.exceptions.RequestException(f"Failed to create dataset. Status code: {response.status_code}")
         
         except Exception as e:
-            log.error(f"OOOOOOOOOOOOO   Failed Action: {e}")
+            log.error(f"Failed Action: {e}")
             return None
 
     return package
 
 def upload_or_update_resource(company_name, package_id, json_file_path):
+    log.debug("Resourceeee test::::::::")
+    log.debug(f"package_id: {package_id}")
+    log.debug(f"company_name: {company_name}")
+    log.debug(f"json_file_path: {json_file_path}")
+
     """
     Upload or update the resource in the dataset with the local JSON file.
     """
@@ -146,20 +114,15 @@ def upload_or_update_resource(company_name, package_id, json_file_path):
              # Disable SSL verification (not recommended for production)
         )
 
-        log.debug(response.json)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            response.raise_for_status()
-           # package = ckan.action.package_show(id=package_id)
-            for resource in response.json().get("resources", []): 
-                if resource.get("name") == company_name:
-                    existing_resource = resource
-                    break
     except Exception as e:
         log.error(f"Error checking resources: {e}")
 
+
+    if os.path.exists(json_file_path):
+        log.debug("File found!")
+    else:
+        log.debug("File not found!")
+    
     ########### Prepare the resource data ###########
     with open(json_file_path, "rb") as file_obj:
         resource_data = {
@@ -213,9 +176,6 @@ def main():
         folder_path = os.path.join(LOCAL_JSON_FOLDER, LOCAL_JSON_FILE)
         meta_json_path = os.path.join(folder_path, company_name, 'meta.json')
 
-        log.info("Meta Json PATH::::::::::: %s", meta_json_path)
-
-
         if os.path.exists(meta_json_path):
             log.info(f"Found meta.json for {company_name}.")
             
@@ -229,8 +189,6 @@ def main():
 
                     ############ Save the website and email data to the database ###########
                     save_website_and_email(company_name_from_json, website_url, emails, connection)
-
-                    test3()
 
                 ############ Create or update the dataset (package) for this company ###########
                 package = create_or_update_dataset(company_name)
