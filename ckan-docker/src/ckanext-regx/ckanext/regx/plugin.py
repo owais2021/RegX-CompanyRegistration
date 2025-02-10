@@ -145,12 +145,38 @@ class RegxPlugin(SingletonPlugin):
             self._check_access(admin_only=True)
             return AdminUserController.admin_all_user_profiles()
         
-        @blueprint.route('/fetch_companies')
+        @blueprint.route('/fetch_companies', methods=['POST'])
         def fetch_companies():
             """
             Admin-only page to view all user profiles.
             """
+            #self._check_access(admin_only=True)
             return FetchCompanyController.start_fetching()
+
+        @blueprint.route('/pause_fetching', methods=['POST'])
+        def pause_fetching():
+            """
+            Admin-only page to view all user profiles.
+            """
+            #self._check_access(admin_only=True)
+            return FetchCompanyController.pause_fetching()
+        
+
+        @blueprint.route('/continue_fetching', methods=['POST'])
+        def continue_fetching():
+            """
+            Admin-only page to view all user profiles.
+            """
+            #self._check_access(admin_only=True)
+            return FetchCompanyController.continue_fetching()
+        
+        @blueprint.route('/stop_fetching', methods=['POST'])
+        def stop_fetching():
+            """
+            Admin-only page to view all user profiles.
+            """
+            #self._check_access(admin_only=True)
+            return FetchCompanyController.stop_fetching()
 
         return blueprint
 

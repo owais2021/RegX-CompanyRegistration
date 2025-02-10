@@ -266,7 +266,7 @@ def save_website_and_email(company_name, website_url, emails, connection):
             for email in emails:
                 email = email.strip()  # Clean up any whitespace
                 if email:  # Ensure the email is not an empty string
-                    log.info(f"Updating email {email} for {company_name}")
+                   # log.info(f"Updating email {email} for {company_name}")
                     with connection.cursor() as cursor:
                         cursor.execute("""
                             UPDATE regx_company

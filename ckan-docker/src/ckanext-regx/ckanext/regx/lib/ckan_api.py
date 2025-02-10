@@ -114,6 +114,14 @@ def upload_or_update_resource(company_name, package_id, json_file_path):
              # Disable SSL verification (not recommended for production)
         )
 
+        resources = response.json().get("result", {}).get("resources", [])
+    
+        for resource in resources:
+            if resource.get("name") == company_name:
+                existing_resource = resource
+                break  
+
+
     except Exception as e:
         log.error(f"Error checking resources: {e}")
 
