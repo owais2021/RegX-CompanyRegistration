@@ -34,6 +34,7 @@ def create_table(connection):
         company_name TEXT NOT NULL,
         website VARCHAR(255),
         email VARCHAR(255),
+        resource_url TEXT,
         created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_company_email UNIQUE (company_name, email)
@@ -132,9 +133,9 @@ def insert_tender_data(tender_id, company_name, connection):
         connection.rollback()
         print(f"Error inserting tender data: {e}")
 
-def save_website_and_email(company_name, website_url, emails, connection):
+def save_website_and_email(company_name, website_url, emails, resource_url, connection):
     """
-    Update the website and emails for the specified company in the database.
+    Update the website, emails, and resource URL for the specified company in the database.
     """
     try:
         # Update emails for the specified company
@@ -162,8 +163,20 @@ def save_website_and_email(company_name, website_url, emails, connection):
                 """, (website_url, company_name))
             connection.commit()
 
+        # Update resource URL for the specified company
+        if resource_url:
+            print(f"Updating resource URL {resource_url} for {company_name}")
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE regx_company
+                    SET resource_url = %s, modified = CURRENT_TIMESTAMP
+                    WHERE company_name = %s;
+                """, (resource_url, company_name))
+            connection.commit()
+
+
     except Exception as e:
-        print(f"Error updating website and email for {company_name}: {e}")
+        print(f"Error updating website, email, and resource URL for {company_name}: {e}")
 
 
 def get_package_names_from_db(connection):
