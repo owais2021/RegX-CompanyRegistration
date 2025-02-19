@@ -15,11 +15,13 @@ SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 if not SERPAPI_API_KEY:
     raise ValueError("SERPAPI_API_KEY is missing in environment variables.")
 
-PARSED_CKAN_DATA_FILE = os.getenv("PARSED_CKAN_DATA_FILE")
+#PARSED_CKAN_DATA_FILE = os.getenv("PARSED_CKAN_DATA_FILE")
+PARSED_CKAN_DATA_FILE = "/srv/app/src_extensions/ckanext-regx/ckanext/regx/scripts/parse-data/all_datasets_data.json"
 if not PARSED_CKAN_DATA_FILE:
     raise ValueError("PARSED_CKAN_DATA_FILE is missing in environment variables.")
 
 output_dir = os.getenv("COMPANY_DETAILS_FILE", "scripts/scrape-data")
+output_dir="/srv/app/src_extensions/ckanext-regx/ckanext/regx/scripts/scrape-data"
 
 ###### Set up logging ######
 logging.basicConfig(level=logging.DEBUG)

@@ -42,7 +42,7 @@ def run_fetching():
 
             # Step 3: Interact with CKAN API to create/update dataset
             log.debug("Step 3: Interacting with CKAN API...")
-            #ckan_api_main()
+            ckan_api_main()
 
             log.debug("All steps completed successfully!!!!!!!!!!")
 

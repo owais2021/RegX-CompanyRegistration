@@ -11,7 +11,14 @@
 
         <!-- Three buttons to trigger different API requests -->
         <button id="fetchDataButton" class="btn btn-primary">Start Fetching Data</button>
+        
+        <!-- Conditionally set the text of the pause/continue button based on is_paused -->
+        {% if  pause_job %}
+        <button id="pauseButton" class="btn btn-secondary"><span class="continue-symbol">▶</span> Continue Fetching Data</button>
+        {% else %}
         <button id="pauseButton" class="btn btn-secondary"><span class="pause-symbol">⏸</span> Pause Fetching Data</button>
+        {% endif %}
+        
         <button id="stopButton" class="btn btn-danger">Stop Fetching Data</button>
     </div>
 </div>
@@ -53,7 +60,7 @@
                     },
                     success: function (response) {
                         alert(response.message);
-                        $('#pauseButton').html('<span class="continue-symbol">▶</span> Continue Fetching Data'); // Change button text with symbol
+                        $('#pauseButton').html('<span class="continue-symbol">▶</span> Continue Fetching Data'); // Change button text to Continue
                     },
                     error: function (xhr) {
                         alert(`Error: ${xhr.responseJSON ? xhr.responseJSON.error : "Request failed"}`);
@@ -69,7 +76,7 @@
                     },
                     success: function (response) {
                         alert(response.message);
-                        $('#pauseButton').html('<span class="pause-symbol">⏸</span> Pause Fetching Data'); // Change button text with symbol back to pause
+                        $('#pauseButton').html('<span class="pause-symbol">⏸</span> Pause Fetching Data'); // Change button text back to Pause
                     },
                     error: function (xhr) {
                         alert(`Error: ${xhr.responseJSON ? xhr.responseJSON.error : "Request failed"}`);
@@ -78,7 +85,7 @@
             }
         });
 
-        // Button 3: Stop Fetching Data (Example: might trigger a different API)
+        // Button 3: Stop Fetching Data
         $('#stopButton').on('click', function () {
             $.ajax({
                 url: '/regx/stop_fetching',  // Endpoint for stopping fetching

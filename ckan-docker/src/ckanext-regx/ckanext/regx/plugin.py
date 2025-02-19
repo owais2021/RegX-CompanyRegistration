@@ -17,7 +17,7 @@ from ckanext.regx.lib.database import (
     create_tables,
     close_db_connection
 )
-from ckanext.regx.main import run_fetching
+from ckanext.regx.main import run_fetching, pause_job
 from flask import Flask
 from ckanext.regx.logic import action
 
@@ -64,11 +64,15 @@ class RegxPlugin(SingletonPlugin):
         # Index route
         @blueprint.route('/')
         def index():
+
+            extra_vars = {
+                'pause_job': pause_job  
+            }
             """
             Index route for the plugin.
             """
             self._check_access()  # Accessible to all logged-in users
-            return tk.render('index.html')
+            return tk.render('index.html', extra_vars)
 
         # Routes for the Sherry form
         blueprint.add_url_rule('/sherry_form', 'sherry_form',
