@@ -141,25 +141,30 @@ def download_and_parse_json(resource_url):
 
 def extract_names_and_ocids_from_json(data):
     """
-    Extract 'legalName' and 'ocid'
-    Always process data if numberOfTenderers > 0 .
+    Extract 'legalName', 'ocid', and 'tender title'
+    Always process data if numberOfTenderers > 0.
     """
     extracted_entries = []
     seen_legalNames = set()  ########## Track unique legalNames #########
 
-    def extract(data, ocid_number=""):
+    def extract(data, ocid_number="", tender_title=""):
         if isinstance(data, dict):
-            ######### Process numberOfTenderers if present #########
+            # Process numberOfTenderers if present
             number_of_tenderers = data.get("numberOfTenderers")
             if number_of_tenderers:
                 print(f"Found numberOfTenderers: {number_of_tenderers}")
+            
             ########## Extract OCID at the current level and update ocid_number #########
             ocid = data.get("ocid", "")
             if ocid:
-                ocid_number = ocid.replace("ocds-mnwr74-", "")######### Remove the fixed prefix #########
+                ocid_number = ocid.replace("ocds-mnwr74-", "")  ########## Remove fixed prefix #########
+            
+            ########## Extract Tender Title #########
+            if "tender" in data and "title" in data["tender"]:
+                tender_title = data["tender"]["title"]
 
+            ######### Process tenderers and add data #########
             if number_of_tenderers and number_of_tenderers > 0:
-                ########## Process parties and roles #########
                 tenderers = data.get("tenderers", [])
                 for tender in tenderers:
                     legal_name = tender.get("legalName", tender.get("name"))
@@ -168,18 +173,19 @@ def extract_names_and_ocids_from_json(data):
                         extracted_entries.append({
                             "ocid": ocid_number,  
                             "legalName": legal_name,
+                            "tenderTitle": tender_title
                         })
 
             ########## Recursively process all nested dictionaries and lists #########
             for value in data.values():
                 if isinstance(value, (dict, list)):
-                    extract(value, ocid_number)
+                    extract(value, ocid_number, tender_title)
 
         elif isinstance(data, list):
             for item in data:
-                extract(item, ocid_number)
+                extract(item, ocid_number, tender_title)
 
-    ########## Start extraction #########
+    ######### Start extraction #########
     extract(data)
     return extracted_entries
 
@@ -261,7 +267,7 @@ def main():
      for entry in all_extracted_data:
         print(f"Attempting to insert: ocid={entry['ocid']}, legalName={entry['legalName']}")
         insert_company_data(entry["legalName"], connection)
-        insert_tender_data(entry["ocid"], entry["legalName"], connection)
+        insert_tender_data(entry["ocid"], entry["legalName"], entry["tenderTitle"], connection)
 
     close_db_connection(connection)
 

@@ -46,6 +46,7 @@ def create_table(connection):
         id SERIAL PRIMARY KEY,
         tender_id TEXT NOT NULL,
         company_name TEXT NOT NULL,
+        tender_title TEXT NOT NULL,
         company_id INT REFERENCES regx_company(id),
         CONSTRAINT unique_tender UNIQUE (tender_id, company_name)
     );
@@ -107,10 +108,10 @@ def insert_company_data(company_name, connection):
     except Exception as e:
         print(f"Error inserting company data: {e}")
         return None
-    
-def insert_tender_data(tender_id, company_name, connection):
+
+def insert_tender_data(tender_id, company_name, tender_title, connection):
     """
-    Insert `tender_id` and `company_name` into the 'regx_tender' table.
+    Insert `tender_id`, `company_name`, and `tender_title` into the 'regx_tender' table.
     Ensure the `company_name` exists in the 'regx_company' table.
     """
     try:
@@ -120,15 +121,16 @@ def insert_tender_data(tender_id, company_name, connection):
             print("Company insertion failed. Tender data not inserted.")
             return
 
-        # Insert into `regx_tender` #####
+        ######## Insert into `regx_tender` with `tender_title` #####
         with connection.cursor() as cursor:
             insert_tender_query = """
-            INSERT INTO regx_tender (tender_id, company_name, company_id)
-            VALUES (%s, %s, %s)
+            INSERT INTO regx_tender (tender_id, company_name, tender_title, company_id)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (tender_id, company_name) DO NOTHING;
             """
-            cursor.execute(insert_tender_query, (tender_id, company_name, company_id))
+            cursor.execute(insert_tender_query, (tender_id, company_name, tender_title, company_id))
             connection.commit()
-            print(f"Inserted into 'regx_tender': {tender_id}, {company_name}")
+            print(f"Inserted into 'regx_tender': {tender_id}, {company_name}, {tender_title}")
     except Exception as e:
         connection.rollback()
         print(f"Error inserting tender data: {e}")
@@ -138,11 +140,11 @@ def save_website_and_email(company_name, website_url, emails, resource_url, conn
     Update the website, emails, and resource URL for the specified company in the database.
     """
     try:
-        # Update emails for the specified company
+        ########## Update emails for the specified company #########
         if emails and isinstance(emails, list):
             for email in emails:
-                email = email.strip()  # Clean up any whitespace
-                if email:  # Ensure the email is not an empty string
+                email = email.strip()  ########## Clean up any whitespace #########
+                if email:  ########## Ensure the email is not an empty string #########
                     print(f"Updating email {email} for {company_name}")
                     with connection.cursor() as cursor:
                         cursor.execute("""
@@ -152,7 +154,7 @@ def save_website_and_email(company_name, website_url, emails, resource_url, conn
                         """, (email, company_name))
                     connection.commit()
 
-        # Update website for the specified company
+        ########## Update website for the specified company #########
         if website_url:
             print(f"Updating website {website_url} for {company_name}")
             with connection.cursor() as cursor:
@@ -163,7 +165,7 @@ def save_website_and_email(company_name, website_url, emails, resource_url, conn
                 """, (website_url, company_name))
             connection.commit()
 
-        # Update resource URL for the specified company
+        ######### Update resource URL for the specified company #########
         if resource_url:
             print(f"Updating resource URL {resource_url} for {company_name}")
             with connection.cursor() as cursor:
