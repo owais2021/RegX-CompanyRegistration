@@ -4,7 +4,7 @@ import time
 import schedule
 import threading
 import uuid
-from ckanext.regx.lib.thread_manager import get_scheduler_thread
+
 from ckanext.regx.lib.process_ckan_data import main as process_ckan_data_main
 from ckanext.regx.lib.google_search import main as google_search_main
 from ckanext.regx.lib.ckan_api import main as ckan_api_main
@@ -17,68 +17,68 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-"""
+
 class PausableThread(threading.Thread):
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+            return cls._instance
+
     def __init__(self):
+        if hasattr(self, "initialized"):  # Prevent re-initialization
+            return
         super().__init__()
         self.pause_event = threading.Event()
         self.pause_event.set()  # Start unpaused
         self.running = True
-        self.id = uuid.uuid4()
+        self.daemon = True  # Ensure it stops with the main process
+        self.id = uuid.uuid4()  # Debugging
+        self.initialized = True  # Prevents re-initialization
 
     def run(self):
-        log.info("Thread started!")
-        schedule.every(30).seconds.do(lambda: run_fetching(self))
-        log.info(f"UUID: {self.id}")
+        log.info(f"Thread started with UUID: {self.id}")
+        schedule.every(30).seconds.do(lambda: run_fetching(self.pause_event))
 
         while self.running:
+            self.pause_event.wait()  # Block execution if paused
             schedule.run_pending()
             time.sleep(1)
 
     def pause(self):
-        log.info("Thread paused")
-        log.info(f"UUID: {self.id}")
-        self.pause_event.clear()  # Block execution at wait()
+        log.info(f"Thread paused with UUID: {self.id}")
+        self.pause_event.clear()
 
     def resume(self):
-        log.info("Thread resumed")
-        log.info(f"UUID: {self.id}")
-        self.pause_event.set()  # Unblock execution at wait()
+        log.info(f"Thread resumed with UUID: {self.id}")
+        self.pause_event.set()
 
     def stop(self):
+        log.info(f"Thread stopped with UUID: {self.id}")
         self.running = False
-        self.pause_event.set()  # Ensure thread can exit from wait()
+        self.pause_event.set()
 
     def is_paused(self):
         return not self.pause_event.is_set()
     
-    def wait(self):
-        self.pause_event.wait()
-    
-scheduler_thread = PausableThread()
+    @classmethod
+    def destroy_instance(cls):
+        """Stops and deletes the singleton instance."""
+        with cls._lock:
+            if cls._instance is not None:
+                log.info(f"Destroying thread with UUID: {cls._instance.id}")
+                cls._instance.stop()
+                cls._instance.join()  # Ensure the thread fully stops
+                cls._instance = None 
 
-
-def main():
-    log.info("Main!")
-    global scheduler_thread  # Declare it as global
-    if scheduler_thread is None or not scheduler_thread.is_alive():
-        scheduler_thread = PausableThread()
-        
-    scheduler_thread.daemon = True
-    scheduler_thread.start()
-"""
-
-def main():
-    log.info("Main function started!")
-    scheduler_thread = get_scheduler_thread()  # Get the singleton thread
-
-    if not scheduler_thread.is_alive():
-        scheduler_thread.start() 
-        
 
 def run_fetching(scheduler_thread):
     log.info("Run fetching!")
-    if not scheduler_thread.is_paused():
+    #if not scheduler_thread.is_paused():
+    if scheduler_thread.is_set():
         log.info("################################# This is a log message!")
         ##### Testing
         connection = connect_to_db()
@@ -110,30 +110,3 @@ def run_fetching(scheduler_thread):
 
 def clear_all_scheduled_jobs():
     schedule.clear()
-"""
-def run_schedule():
-    schedule.every(30).seconds.do(run_fetching)  # For testing
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-def toggle_pause_job(pause=True):
-    Pauses or resumes the scheduled job.
-    global pause_job
-    pause_job = pause
-    status = "paused" if pause else "resumed"
-    logging.debug(f"Job has been {status}.")
-
-def clear_all_scheduled_jobs():
-    schedule.clear()
-
-
-def main():
-    scheduler_thread = threading.Thread(target=run_schedule)
-    scheduler_thread.daemon = True
-    scheduler_thread.start()
-    """
-
-
-if __name__ == "__main__":
-    main()

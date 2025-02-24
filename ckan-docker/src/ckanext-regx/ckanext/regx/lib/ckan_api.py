@@ -88,11 +88,6 @@ def create_or_update_dataset(company_name):
     return package
 
 def upload_or_update_resource(company_name, package_id, json_file_path):
-    log.debug("Resourceeee test::::::::")
-    log.debug(f"package_id: {package_id}")
-    log.debug(f"company_name: {company_name}")
-    log.debug(f"json_file_path: {json_file_path}")
-
     """
     Upload or update the resource in the dataset with the local JSON file.
     """
@@ -161,7 +156,7 @@ def upload_or_update_resource(company_name, package_id, json_file_path):
         else:
             log.error(f"Error while {action.replace('_', 'ing')} resource: {response.content}")
 
-def main():
+def main(pause_event):
     ############ Connect to the database ###########
     connection = connect_to_db()
     if connection is None:
@@ -178,6 +173,7 @@ def main():
 
     ############ Loop through each company name and process the corresponding data ###########
     for company_name in company_names:
+        pause_event.wait()
         log.info(f"Processing company: {company_name}")
         
         ############ Assuming the meta.json file is named after the company and located in the respective folder ###########

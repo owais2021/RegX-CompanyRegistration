@@ -3,7 +3,8 @@ from flask import jsonify
 from ckan.plugins import toolkit as tk
 from ckanext.regx.lib.database import connect_to_db, close_db_connection
 import logging
-from ckanext.regx.main import main, clear_all_scheduled_jobs, toggle_pause_job
+from ckanext.regx.main import main, clear_all_scheduled_jobs#, scheduler_thread
+from ckanext.regx.lib.thread_manager import get_scheduler_thread, reset_scheduler_thread
 
 log = logging.getLogger(__name__)
 
@@ -27,37 +28,44 @@ class FetchCompanyController:
  
         log.debug("Pause fetching")
 
-        try:
-            toggle_pause_job(pause=True)
-            return jsonify({"message": "Pause fetching data!"}), 200
-        except Exception as e:
-            log.error(f"Error while fetching: {str(e)}")
-            return jsonify({"message": "Fetching failed", "error": str(e)}), 400
+        #global scheduler_thread
+        scheduler_thread = get_scheduler_thread()
         
+        if scheduler_thread.is_alive():
+            scheduler_thread.pause()
+            log.debug("Controller")
+            log.debug(scheduler_thread.is_paused())
+            return jsonify({"message": "Scheduler stopped"}), 200
+        return jsonify({"error": "No scheduler running currently"}), 400
+
+     
     @staticmethod
     def continue_fetching():
  
         log.debug("Continue fetching")
 
-        try:
-            toggle_pause_job(pause=False)
-            return jsonify({"message": "Continue fetching data!"}), 200
-        except Exception as e:
-            log.error(f"Error while fetching: {str(e)}")
-            return jsonify({"message": "Fetching failed", "error": str(e)}), 400
-        
+        #global scheduler_thread
+        scheduler_thread = get_scheduler_thread()
+        if scheduler_thread.is_alive():
+            scheduler_thread.resume()
+            log.debug("Controller")
+            log.debug(scheduler_thread.is_paused())
+            return jsonify({"message": "Scheduler resumed"}), 200
+        return jsonify({"error": "No scheduler running currently"}), 400
     @staticmethod
     def stop_fetching():
  
         log.debug("Stop fetching")
 
-        try:
+        scheduler_thread = get_scheduler_thread()
+        if scheduler_thread:
+            scheduler_thread.stop()
             clear_all_scheduled_jobs()
-            return jsonify({"message": " Stop fetching data!"}), 200
-        except Exception as e:
-            log.error(f"Error while fetching: {str(e)}")
-            return jsonify({"message": "Fetching failed", "error": str(e)}), 400
-        
+            reset_scheduler_thread()
+            return jsonify({"message": "Scheduler stopped"}), 200
+        return jsonify({"error": "Scheduler not running"}), 400
+
+    
     
 
 

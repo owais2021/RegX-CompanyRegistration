@@ -94,10 +94,13 @@ def extract_emails(text):
     return re.findall(email_pattern, text)
 
 
-def scrape_pages(links, visited_urls, progress=None):
+def scrape_pages(links, visited_urls, pause_event, progress=None):
     """Scrape all unique links provided and extract emails."""
     scraped_data = []
     for link in links:
+        log.info("EVENT")
+        log.info(pause_event.is_paused())
+        pause_event.wait()
         if link in visited_urls:
             continue
         time.sleep(5)
@@ -142,17 +145,20 @@ def scrape_pages(links, visited_urls, progress=None):
     return scraped_data
 
 
-def process_companies(parsed_data_file, output_dir, api_key):
+def process_companies(parsed_data_file, output_dir, api_key, pause_event):
     """Process each company, find its official URL, and scrape the website."""
     try:
         
         with open(parsed_data_file, "r", encoding="utf-8") as file:
             parsed_data = json.load(file)
 
-        
         os.makedirs(output_dir, exist_ok=True)
 
         for company in parsed_data:
+            log.info("EVENT")
+           # log.info(scheduler_thread.is_set())
+            log.info(pause_event.is_paused())
+            pause_event.wait()
             company_name = company.get("legalName")
             if not company_name:
                 log.warning("Skipping entry with missing legalName.")
@@ -183,7 +189,7 @@ def process_companies(parsed_data_file, output_dir, api_key):
             visited_urls = set()
 
             ####### Scrape the pages ######
-            scraped_data = scrape_pages(links, visited_urls, progress)
+            scraped_data = scrape_pages(links, visited_urls, pause_event, progress)
 
             ####### Aggregate emails ######
             all_emails = set()
@@ -216,7 +222,7 @@ def process_companies(parsed_data_file, output_dir, api_key):
 
 
 ###### Main function ######
-def main():
+def main(pause_event):
     """Main function to call the process_companies method."""
-    process_companies(PARSED_CKAN_DATA_FILE, output_dir, SERPAPI_API_KEY)
+    process_companies(PARSED_CKAN_DATA_FILE, output_dir, SERPAPI_API_KEY, pause_event)
 

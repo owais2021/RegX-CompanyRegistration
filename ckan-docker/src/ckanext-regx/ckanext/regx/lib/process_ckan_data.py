@@ -218,7 +218,7 @@ def save_to_single_file(data, file_path):
         json.dump(existing_data, file, indent=4, ensure_ascii=False)
     log.debug(f"All extracted data saved to {file_path}")
 
-def main():
+def main(pause_event):
     ##### Step 1: Fetch all organizations ######
     organizations = fetch_all_organizations()
 
@@ -231,6 +231,7 @@ def main():
     all_extracted_data = []
     ####### Step 2: Loop through all organizations and their datasets ######
     for org_name in organizations:
+        pause_event.wait()
         log.debug(f"Processing organization: {org_name}")  # Use the organization name directly
         datasets = fetch_all_datasets(org_name)  # Pass the organization name instead of id
 
@@ -264,12 +265,9 @@ def main():
 
     if connection:
      for entry in all_extracted_data:
+        pause_event.wait()
         log.debug(f"Attempting to insert: ocid={entry['ocid']}, legalName={entry['legalName']}")
         insert_company_data(entry["legalName"], connection)
         insert_tender_data(entry["ocid"], entry["legalName"], connection)
 
     close_db_connection(connection)
-
-
-if __name__ == "__main__":
-    main()

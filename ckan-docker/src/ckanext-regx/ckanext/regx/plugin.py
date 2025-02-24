@@ -1,6 +1,6 @@
 import os
 import subprocess
-import threading
+from ckanext.regx.lib.thread_manager import get_scheduler_thread
 import logging
 from ckan.plugins import SingletonPlugin, implements
 from ckan.plugins import toolkit as tk
@@ -17,7 +17,7 @@ from ckanext.regx.lib.database import (
     create_tables,
     close_db_connection
 )
-from ckanext.regx.main import run_fetching, pause_job
+from ckanext.regx.main import run_fetching#, scheduler_thread
 from flask import Flask
 from ckanext.regx.logic import action
 
@@ -64,9 +64,11 @@ class RegxPlugin(SingletonPlugin):
         # Index route
         @blueprint.route('/')
         def index():
-
+            #global scheduler_thread
+            scheduler_thread=get_scheduler_thread()
+            is_paused = scheduler_thread.is_paused()
             extra_vars = {
-                'pause_job': pause_job  
+                'pause_job': is_paused  
             }
             """
             Index route for the plugin.
